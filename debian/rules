@@ -1,0 +1,74 @@
+#!/usr/bin/make -f
+
+# Uncomment to get verbose build output
+#export DH_VERBOSE=1
+
+# Work around Go's GOPATH behavior in package builds
+export GOCACHE=/tmp/go-build-cache
+export GOMODCACHE=/tmp/go-mod-cache
+
+%:
+	dh $@
+
+# Skip tests during package build (run separately)
+override_dh_auto_test:
+	@echo "Tests skipped during package build"
+
+# Skip dwz for Go binaries
+override_dh_dwz:
+	@echo "Skipping dh_dwz for Go binary"
+
+# Skip auto configure (we don't use autotools)
+override_dh_auto_configure:
+	@echo "Configure not needed for Go"
+
+# Skip installinit (we use systemd, not init scripts)
+override_dh_installinit:
+	@echo "Skipping dh_installinit (systemd only)"
+
+# Override installdeb to control which files are marked as conffiles
+override_dh_installdeb:
+	dh_installdeb
+	# Only mark /etc/default/gosendmail as a conffile
+	echo "/etc/default/gosendmail" > debian/gosendmail/DEBIAN/conffiles
+
+# Build the Go binary
+override_dh_auto_build:
+	go build -ldflags="-s -w -X main.version=$$(dpkg-parsechangelog -SVersion 2>/dev/null || echo dev)" -o gosendmail .
+
+# Install files manually
+override_dh_auto_install:
+	# Install binary
+	install -D -m 0755 gosendmail debian/gosendmail/usr/bin/gosendmail
+
+	# Install systemd service
+	install -D -m 0644 debian/gosendmail.service debian/gosendmail/usr/lib/systemd/system/gosendmail.service
+
+	# Install default environment file
+	install -D -m 0640 debian/gosendmail.default debian/gosendmail/etc/default/gosendmail
+
+	# Install optional environment file template for secrets
+	install -D -m 0640 debian/gosendmail.env debian/gosendmail/etc/gosendmail/env.dist
+
+	# Install config template
+	install -D -m 0640 debian/config.yaml debian/gosendmail/etc/gosendmail/config.yaml
+
+	# Install logrotate config
+	install -D -m 0644 debian/gosendmail.logrotate debian/gosendmail/etc/logrotate.d/gosendmail
+
+	# Install check-config helper script
+	install -D -m 0755 debian/check-config.sh debian/gosendmail/usr/share/gosendmail/check-config.sh
+
+	# Install man page
+	install -D -m 0644 debian/gosendmail.8 debian/gosendmail/usr/share/man/man8/gosendmail.8
+
+	# Install email templates
+	install -D -m 0644 internal/templates/*.html -t debian/gosendmail/usr/share/gosendmail/internal/templates/
+
+	# Create state directories
+	install -d -m 0750 debian/gosendmail/var/lib/gosendmail
+	install -d -m 0750 debian/gosendmail/var/log/gosendmail
+
+override_dh_auto_clean:
+	rm -f gosendmail
+	rm -rf debian/gosendmail

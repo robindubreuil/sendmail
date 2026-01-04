@@ -1,0 +1,37 @@
+# Binaries
+gosendmail
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Debian build artifacts
+*.deb
+debian/gosendmail/
+debian/files
+debian/*.substvars
+debian/*.debhelper*
+
+# Environment and secrets
+.env
+.env.*
+
+# IDE and editor
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# AI assistants
+.claude/
+CLAUDE.md
+.opencode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test
+coverage.out
+coverage.html

@@ -1,0 +1,98 @@
+#!/bin/bash
+set -e
+
+case "$1" in
+    configure)
+        # Create gosendmail system group if it doesn't exist
+        if ! getent group gosendmail >/dev/null 2>&1; then
+            addgroup --system --quiet gosendmail || true
+        fi
+
+        # Create gosendmail system user if it doesn't exist
+        if ! getent passwd gosendmail >/dev/null 2>&1; then
+            adduser --system \
+                --home /var/lib/gosendmail \
+                --no-create-home \
+                --gecos "GoSendmail service" \
+                --ingroup gosendmail \
+                --disabled-password \
+                gosendmail || true
+        fi
+
+        # Ensure state directories exist with correct permissions
+        if [ ! -d /var/lib/gosendmail ]; then
+            mkdir -p /var/lib/gosendmail
+        fi
+        chown -R gosendmail:gosendmail /var/lib/gosendmail
+        chmod 750 /var/lib/gosendmail
+
+        if [ ! -d /var/log/gosendmail ]; then
+            mkdir -p /var/log/gosendmail
+        fi
+        chown -R gosendmail:gosendmail /var/log/gosendmail
+        chmod 750 /var/log/gosendmail
+
+        # Set permissions for config files
+        if [ -f /etc/gosendmail/config.yaml ]; then
+            chown root:gosendmail /etc/gosendmail/config.yaml
+            chmod 640 /etc/gosendmail/config.yaml
+        fi
+
+        # Create env file from template if it doesn't exist
+        if [ ! -f /etc/gosendmail/env ] && [ -f /etc/gosendmail/env.dist ]; then
+            cp /etc/gosendmail/env.dist /etc/gosendmail/env
+            chmod 0640 /etc/gosendmail/env
+            chown root:gosendmail /etc/gosendmail/env
+        fi
+
+        # Add gosendmail user to ssl-cert group for certificate access
+        if getent group ssl-cert >/dev/null 2>&1; then
+            usermod -a -G ssl-cert gosendmail 2>/dev/null || true
+        fi
+
+        # Enable and reload systemd
+        if [ -d /run/systemd/system ]; then
+            systemctl daemon-reload >/dev/null 2>&1 || true
+
+            if [ -z "$2" ]; then
+                # Fresh installation - enable but don't start (user needs to configure)
+                systemctl enable gosendmail.service >/dev/null 2>&1 || true
+
+                # Show configuration message
+                echo ""
+                echo "=========================================="
+                echo "GoSendmail package installed successfully!"
+                echo "=========================================="
+                echo ""
+                echo "Before starting the service, configure the following in /etc/default/gosendmail:"
+                echo "  - RECAPTCHA_SECRET_KEY"
+                echo "  - SMTP_HOST, SMTP_USERNAME, SMTP_PASSWORD"
+                echo "  - FROM_ADDRESS, TO_ADDRESS"
+                echo ""
+                echo "Then start the service with:"
+                echo "  systemctl start gosendmail"
+                echo ""
+                echo "Service status: systemctl status gosendmail"
+                echo "Configuration: /etc/default/gosendmail"
+                echo "=========================================="
+            else
+                # Upgrade - reload or restart the service
+                systemctl reload-or-restart gosendmail.service >/dev/null 2>&1 || true
+            fi
+        fi
+        ;;
+
+    triggered)
+        # Trigger post-installation hooks
+        ;;
+
+    abort-upgrade|abort-remove|abort-deconfigure)
+        ;;
+
+    *)
+        echo "postinst called with unknown argument \`$1'" >&2
+        exit 1
+        ;;
+esac
+
+exit 0

@@ -1,0 +1,29 @@
+Source: gosendmail
+Section: net
+Priority: optional
+Maintainer: Robin Dubreuil <63008968+robindubreuil@users.noreply.github.com>
+Build-Depends: debhelper-compat (= 13), golang-any (>= 2:1.23~)
+Standards-Version: 4.7.0
+Homepage: https://github.com/robindubreuil/sendmail
+Vcs-Browser: https://github.com/robindubreuil/sendmail
+Vcs-Git: https://github.com/robindubreuil/sendmail.git
+Rules-Requires-Root: no
+
+Package: gosendmail
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Modern Go backend for contact form processing
+ This is a modern Go backend implementation that replaces a PHP contact
+ form handler. The application processes contact form submissions with
+ validation, reCAPTCHA verification, and email sending.
+ .
+ Key features:
+  - Form field validation matching frontend regex patterns
+  - Google reCAPTCHA v3 validation with configurable score threshold
+  - SMTP email sending with TLS
+  - Rate limiting to prevent spam
+  - Graceful shutdown with signal handling
+  - Structured logging
+  - JSON API responses
+  - Security best practices
+  - Systemd integration for easy deployment

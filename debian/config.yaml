@@ -1,0 +1,28 @@
+# GoSendmail Configuration
+# This file contains the main configuration for the gosendmail service
+# Sensitive data can be overridden via environment variables for security
+
+server:
+  host: "0.0.0.0"
+  port: 8080
+  read_timeout: 30s
+  write_timeout: 30s
+
+recaptcha:
+  secret_key: ""  # Override with RECAPTCHA_SECRET_KEY env var
+  verify_url: "https://www.google.com/recaptcha/api/siteverify"
+
+email:
+  smtp_host: ""      # Override with SMTP_HOST env var
+  smtp_port: 587     # Override with SMTP_PORT env var
+  smtp_username: ""  # Override with SMTP_USERNAME env var
+  smtp_password: ""  # Override with SMTP_PASSWORD env var
+  from_address: ""   # Override with FROM_ADDRESS env var
+  to_address: ""     # Override with TO_ADDRESS env var
+  subject: "Nouveau message de contact"
+  format: "html"
+
+security:
+  max_message_size: 4096
+  rate_limit_requests: 10
+  rate_limit_window: 1m

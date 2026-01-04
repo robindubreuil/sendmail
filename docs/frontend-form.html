@@ -1,0 +1,86 @@
+<form id="mailForm" class="needs-validation novalidate" method="post" action="/sendmail">
+    <input type="hidden" id="form_nonce" name="form_nonce">
+    <input type="hidden" id="g-recaptcha-response" name="g-recaptcha-response">
+    <div class="form-row">
+        <div class="col-sm-4 mb-3"> <label for="firstName">Prénom*</label> <input type="text"
+                pattern="[a-zA-ZÀ-ÿ'\-\s]{1,64}" class="form-control" name="firstName" id="firstName" placeholder="Prénom"
+                required=""> </div>
+        <div class="col-sm-8 mb-3"> <label for="name">Nom*</label> <input type="text" pattern="[a-zA-ZÀ-ÿ'\-\s]{1,64}"
+                class="form-control" name="name" id="name" placeholder="Nom" required=""> </div>
+    </div>
+    <div class="form-row">
+        <div class="col-sm-2 mb-3"> <label for="postbox">N°</label> <input type="text" pattern="[0-9]{1,5}"
+                class="form-control" name="postbox" id="postbox" placeholder="N°"> </div>
+        <div class="col-sm-10 mb-3"> <label for="street">Rue*</label> <input type="text"
+                pattern="[a-zA-ZÀ-ÿ'\-\s]{1,128}" class="form-control" name="street" id="street" placeholder="Rue"
+                required=""> </div>
+    </div>
+    <div class="form-row">
+        <div class="col-sm-6 mb-3"> <label for="city">Ville*</label> <input type="text" pattern="[a-zA-ZÀ-ÿ'\-\s]{1,45}"
+                class="form-control" name="city" id="city" placeholder="Ville" required=""> </div>
+        <div class="col-sm-2 mb-3"> <label for="zip">CP*</label> <input type="text" pattern="[0-9]{5}"
+                class="form-control" name="zip" id="zip" placeholder="Code postal" required=""> </div>
+        <div class="col-sm-4 mb-3"> <label for="phone">Téléphone*</label> <input type="tel" pattern="0[0-9]{9}"
+                class="form-control" name="phone" id="phone" placeholder="Téléphone" required=""> </div>
+    </div>
+    <div class="mb-3"> <label for="email">E-mail</label> <input type="email"
+            pattern="[A-Za-z0-9](([_\.\-]?[a-zA-Z0-9]+)*)@([A-Za-z0-9]+)(([_\.\-]?[a-zA-Z0-9]+)*)\.([A-Za-z]{2,})"
+            class="form-control" name="email" id="email" placeholder="E-mail"> </div>
+    <div class="mb-3"> <label for="message">Message*</label> <textarea class="form-control" name="message" id="message"
+            placeholder="Message" required=""></textarea> </div>
+    <div class="form-row"> <label>*Il est impératif de renseigner ce champ.</label> </div>
+    <div class="form-row">
+        <div class="form-check"> <input class="form-check-input" type="checkbox" value="on"
+                name="invalidCheck" id="invalidCheck" required=""> <label class="form-check-label"
+                for="invalidCheck"> Je certifie que les informations renseignées ci-dessus sont correctes. </label>
+            <div class="invalid-feedback"> Vous devez confirmer l'exactitude des informations renseignées pour
+                continuer. </div>
+        </div>
+    </div>
+    <div class="form-row"> <button class="btn btn-primary mt-3" type="submit" id="submitBtn">Envoyer</button> <small
+            class="text-muted mt-1">Ce site est protégé par reCAPTCHA, qui est soumis à la <a
+                href="https://policies.google.com/privacy">politique de confidentialité</a> ainsi qu'aux <a
+                href="https://policies.google.com/terms">conditions d'utilisation</a> appliquées par Google. </small>
+    </div>
+</form>
+
+<!-- reCAPTCHA v3 -->
+<script src="https://www.google.com/recaptcha/api.js?render=YOUR_SITE_KEY"></script>
+<script>
+document.getElementById('mailForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    var submitBtn = document.getElementById('submitBtn');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = 'Envoi en cours...';
+
+    // Fetch nonce first
+    fetch('/nonce')
+        .then(function(response) { return response.json(); })
+        .then(function(data) {
+            document.getElementById('form_nonce').value = data.nonce;
+
+            // Then execute reCAPTCHA
+            return grecaptcha.execute('YOUR_SITE_KEY', {action: 'contact'});
+        })
+        .then(function(token) {
+            document.getElementById('g-recaptcha-response').value = token;
+
+            // Submit the form
+            return fetch('/sendmail', {
+                method: 'POST',
+                body: new FormData(document.getElementById('mailForm'))
+            });
+        })
+        .then(function(response) { return response.text(); })
+        .then(function(data) {
+            document.documentElement.innerHTML = data;
+        })
+        .catch(function(error) {
+            console.error('Error:', error);
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'Envoyer';
+            alert('Une erreur est survenue. Veuillez réessayer.');
+        });
+});
+</script>

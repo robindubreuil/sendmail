@@ -1,0 +1,21 @@
+server:
+  host: "0.0.0.0"
+  port: 8080
+  read_timeout: 30s
+  write_timeout: 30s
+
+recaptcha:
+  verify_url: "https://www.google.com/recaptcha/api/siteverify"
+  score_threshold: 0.5
+
+email:
+  smtp_port: 587
+  subject: "Nouveau message de contact"
+  format: "html"
+
+security:
+  max_message_size: 4096
+  rate_limit_requests: 10
+  rate_limit_window: 1m
+  trusted_proxies: []
+  # Set to ["*"] to trust all proxies, or specific IPs like ["10.0.0.1", "10.0.0.2"]

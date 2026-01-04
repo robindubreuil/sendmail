@@ -1,0 +1,129 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - run: go test -race ./...
+
+  build-deb:
+    name: Build Debian Package
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Build binary
+        env:
+          CGO_ENABLED: 0
+          GOOS: linux
+          GOARCH: amd64
+        run: |
+          VERSION=${GITHUB_REF_NAME#v}
+          go build -ldflags="-s -w -X main.version=${GITHUB_REF_NAME}" -o gosendmail main.go
+
+      - name: Build debian package
+        run: |
+          VERSION=${GITHUB_REF_NAME#v}
+          PKGDIR="gosendmail_${VERSION}-1_amd64"
+
+          mkdir -p "${PKGDIR}/DEBIAN"
+          mkdir -p "${PKGDIR}/usr/bin"
+          mkdir -p "${PKGDIR}/usr/lib/systemd/system"
+          mkdir -p "${PKGDIR}/etc/default"
+          mkdir -p "${PKGDIR}/etc/gosendmail"
+          mkdir -p "${PKGDIR}/etc/logrotate.d"
+          mkdir -p "${PKGDIR}/usr/share/gosendmail/internal/templates"
+          mkdir -p "${PKGDIR}/usr/share/gosendmail/check-config"
+          mkdir -p "${PKGDIR}/usr/share/man/man8"
+          mkdir -p "${PKGDIR}/var/lib/gosendmail"
+          mkdir -p "${PKGDIR}/var/log/gosendmail"
+
+          install -m 0755 gosendmail "${PKGDIR}/usr/bin/gosendmail"
+          install -m 0644 debian/gosendmail.service "${PKGDIR}/usr/lib/systemd/system/gosendmail.service"
+          install -m 0640 debian/gosendmail.default "${PKGDIR}/etc/default/gosendmail"
+          install -m 0640 debian/gosendmail.env "${PKGDIR}/etc/gosendmail/env.dist"
+          install -m 0640 debian/config.yaml "${PKGDIR}/etc/gosendmail/config.yaml"
+          install -m 0644 debian/gosendmail.logrotate "${PKGDIR}/etc/logrotate.d/gosendmail"
+          install -m 0755 debian/check-config.sh "${PKGDIR}/usr/share/gosendmail/check-config/check-config.sh"
+          install -m 0644 debian/gosendmail.8 "${PKGDIR}/usr/share/man/man8/gosendmail.8"
+          install -m 0644 internal/templates/*.html -t "${PKGDIR}/usr/share/gosendmail/internal/templates/"
+
+          cat > "${PKGDIR}/DEBIAN/control" << 'CONTROL'
+          Package: gosendmail
+          CONTROL
+          echo "Version: ${VERSION}-1" >> "${PKGDIR}/DEBIAN/control"
+          cat >> "${PKGDIR}/DEBIAN/control" << 'CONTROL'
+          Architecture: amd64
+          Maintainer: Robin Dubreuil <63008968+robindubreuil@users.noreply.github.com>
+          Section: net
+          Priority: optional
+          Homepage: https://github.com/robindubreuil/sendmail
+          Rules-Requires-Root: no
+          Depends: ${shlibs:Depends}, ${misc:Depends}
+          Description: Modern Go backend for contact form processing
+           A modern Go backend implementation that processes contact form
+           submissions with validation, reCAPTCHA verification, and SMTP
+           email sending.
+           .
+           Key features:
+            - Form field validation matching frontend regex patterns
+            - Google reCAPTCHA v3 validation with configurable score threshold
+            - SMTP email sending with TLS
+            - Rate limiting to prevent spam
+            - Graceful shutdown with signal handling
+            - Structured JSON logging
+            - Nonce-based CSRF protection
+            - Systemd integration for easy deployment
+          CONTROL
+
+          install -m 0755 debian/gosendmail.postinst "${PKGDIR}/DEBIAN/postinst"
+          install -m 0755 debian/gosendmail.prerm "${PKGDIR}/DEBIAN/prerm"
+
+          printf '/etc/default/gosendmail\n/etc/gosendmail/config.yaml\n' > "${PKGDIR}/DEBIAN/conffiles"
+
+          chown -R root:root "${PKGDIR}"
+          chmod 0750 "${PKGDIR}/var/lib/gosendmail"
+          chmod 0750 "${PKGDIR}/var/log/gosendmail"
+          chmod 0640 "${PKGDIR}/etc/default/gosendmail"
+          chmod 0640 "${PKGDIR}/etc/gosendmail/env.dist"
+          chmod 0640 "${PKGDIR}/etc/gosendmail/config.yaml"
+
+          dpkg-deb --build "${PKGDIR}"
+
+      - name: Upload debian package
+        uses: actions/upload-artifact@v4
+        with:
+          name: debian-package
+          path: '*.deb'
+
+      - name: Generate checksums
+        run: |
+          sha256sum *.deb > checksums-sha256.txt
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            *.deb
+            checksums-sha256.txt

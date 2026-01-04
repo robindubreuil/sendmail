@@ -1,0 +1,160 @@
+.\"
+.\" Copyright 2025 Robin DUBREUIL
+.\" This man page is licensed under the same terms as the sendmail-go package.
+.\"
+.TH GOSENDMAIL 8 "April 2026" "gosendmail 1.0.0" "System Administration"
+.SH NAME
+gosendmail \- Modern Go backend for handling contact form submissions
+.SH SYNOPSIS
+.B gosendmail
+[\fI\,OPTIONS\/\fR]
+.SH DESCRIPTION
+.B gosendmail
+is a modern Go backend implementation that replaces traditional PHP contact form handlers. The application processes contact form submissions with validation, reCAPTCHA verification, and SMTP email sending.
+
+The service runs as a background daemon and provides HTTP endpoints for processing contact form submissions from web applications.
+.SH OPTIONS
+.TP
+\fB\-h, \-\-help\fR
+Display usage information and exit.
+.TP
+\fB\-v, \-\-version\fR
+Display version information and exit.
+.TP
+\fB\-c, \-\-config\fR \fIFILE\fR
+Path to configuration file (default: /etc/gosendmail/config.yaml).
+.SH CONFIGURATION
+The service is configured through environment variables or a YAML configuration file.
+Key configuration options include:
+.TP
+\fBRECAPTCHA_SECRET_KEY\fR
+Google reCAPTCHA secret key (required).
+.TP
+\fBSMTP_HOST\fR
+SMTP server hostname (required).
+.TP
+\fBSMTP_USERNAME\fR
+SMTP authentication username (required).
+.TP
+\fBSMTP_PASSWORD\fR
+SMTP authentication password (required).
+.TP
+\fBFROM_ADDRESS\fR
+From email address (required).
+.TP
+\fBTO_ADDRESS\fR
+Destination email address (required).
+.TP
+\fBSERVER_HOST\fR
+Server bind address (default: 0.0.0.0).
+.TP
+\fBSERVER_PORT\fR
+Server port (default: 8080).
+.TP
+\fBRATE_LIMIT_REQUESTS\fR
+Rate limit per window (default: 10).
+.TP
+\fBRATE_LIMIT_WINDOW\fR
+Rate limit time window (default: 1m).
+
+For a complete list of configuration options, see the example configuration file at /etc/gosendmail/gosendmail.env.
+.SH HTTP ENDPOINTS
+The service provides the following HTTP endpoints:
+.TP
+\fBPOST /sendmail\fR
+Legacy HTML endpoint compatible with traditional HTML forms (returns HTML responses).
+.TP
+\fBPOST /contact\fR
+Modern JSON REST endpoint (returns JSON responses, recommended for new integrations).
+.TP
+\fBGET /health\fR
+Health check endpoint for monitoring.
+.SH FORM FIELDS
+The contact form supports the following fields:
+.TP
+\fBfirstName\fR, \fBname\fR
+Required, French letters/spaces/hyphens/apostrophes, max 64 chars.
+.TP
+\fBpostbox\fR
+Optional, numbers only, max 5 chars.
+.TP
+\fBstreet\fR
+Required, French letters/spaces/hyphens/apostrophes, max 128 chars.
+.TP
+\fBcity\fR
+Required, French letters/spaces/hyphens/apostrophes, max 45 chars.
+.TP
+\fBzip\fR
+Required, exactly 5 digits (French postal code).
+.TP
+\fBphone\fR
+Required, French format (0XXXXXXXXX).
+.TP
+\fBemail\fR
+Optional, standard email format.
+.TP
+\fBmessage\fR
+Required, max 4096 characters.
+.TP
+\fBg-recaptcha-response\fR
+Required, for bot protection.
+.SH SECURITY FEATURES
+The service includes several security measures:
+.RS
+.IP \[bu] 2
+Input validation prevents injection attacks
+.IP \[bu] 2
+reCAPTCHA verification blocks automated submissions
+.IP \[bu] 2
+Rate limiting prevents spam/abuse
+.IP \[bu] 2
+TLS SMTP ensures secure email transmission
+.IP \[bu] 2
+Request timeouts prevent DoS attacks
+.IP \[bu] 2
+Content type restriction to form data only
+.RE
+.SH SIGNALS
+The service responds to the following signals:
+.TP
+\fBSIGTERM, SIGINT\fR
+Gracefully shutdown the service, allowing in-flight requests to complete.
+.TP
+\fBSIGHUP\fR
+Reload configuration (if supported).
+.SH FILES
+.TP
+\fI/etc/gosendmail/config.yaml\fR
+Main configuration file.
+.TP
+\fI/etc/gosendmail/gosendmail.env\fR
+Environment variables template.
+.TP
+\fI/var/log/gosendmail/\fR
+Log files directory.
+.TP
+\fI/run/gosendmail.pid\fR
+PID file location.
+.SH EXAMPLES
+Start the service with default configuration:
+.IP
+.B gosendmail
+
+Start the service with a custom configuration file:
+.IP
+.B gosendmail -c /path/to/config.yaml
+
+Check the service health:
+.IP
+.B curl http://localhost:8080/health
+
+.SH NOTES
+This is not the traditional sendmail MTA (Mail Transfer Agent). It's specifically designed to handle web contact form submissions and should not be used as a general-purpose mail transfer agent.
+.SH BUGS
+Please report bugs to the package maintainer or through the project's issue tracker.
+.SH SEE ALSO
+.BR curl (1),
+.BR systemd (1),
+.BR smtp (8)
+
+For more information, visit the project documentation or consult the README file included with the package.

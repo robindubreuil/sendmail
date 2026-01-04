@@ -1,0 +1,11 @@
+.git
+.gitignore
+.env
+*.deb
+gosendmail
+README.md
+docs/
+debian/
+.golangci.yml
+config.yaml.example
+docker-compose.yml

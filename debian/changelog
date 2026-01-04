@@ -1,0 +1,18 @@
+gosendmail (1.0.0-1) unstable; urgency=medium
+
+  * Initial public release
+  * Modern Go backend for contact form processing
+  * Form field validation matching frontend regex patterns
+  * Google reCAPTCHA v3 validation with configurable score threshold
+  * SMTP email sending with TLS
+  * Rate limiting to prevent spam
+  * Graceful shutdown with signal handling
+  * Structured JSON logging
+  * Nonce-based CSRF protection
+  * CORS and security headers middleware
+  * Health and readiness endpoints
+  * Systemd service integration with security hardening
+  * Debian package with proper maintainer scripts
+  * Multi-stage Docker build
+
+ -- Robin Dubreuil <63008968+robindubreuil@users.noreply.github.com>  Sat, 18 Apr 2026 12:00:00 +0200
