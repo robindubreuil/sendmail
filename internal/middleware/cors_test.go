@@ -20,7 +20,7 @@ func TestCORS_AllowedOrigin(t *testing.T) {
 	middleware(handler).ServeHTTP(w, req)
 
 	resp := w.Result()
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.Header.Get("Access-Control-Allow-Origin") != "https://example.com" {
 		t.Errorf("Expected Access-Control-Allow-Origin 'https://example.com', got '%s'", resp.Header.Get("Access-Control-Allow-Origin"))
@@ -44,7 +44,7 @@ func TestCORS_BlockedOrigin(t *testing.T) {
 	middleware(handler).ServeHTTP(w, req)
 
 	resp := w.Result()
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.Header.Get("Access-Control-Allow-Origin") != "" {
 		t.Errorf("Expected no Access-Control-Allow-Origin header, got '%s'", resp.Header.Get("Access-Control-Allow-Origin"))
@@ -65,7 +65,7 @@ func TestCORS_Wildcard(t *testing.T) {
 	middleware(handler).ServeHTTP(w, req)
 
 	resp := w.Result()
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.Header.Get("Access-Control-Allow-Origin") != "*" {
 		t.Errorf("Expected Access-Control-Allow-Origin '*', got '%s'", resp.Header.Get("Access-Control-Allow-Origin"))
@@ -88,7 +88,7 @@ func TestCORS_PreflightOPTIONS(t *testing.T) {
 	middleware(handler).ServeHTTP(w, req)
 
 	resp := w.Result()
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusNoContent {
 		t.Errorf("Expected 204 No Content for preflight, got %d", resp.StatusCode)
@@ -116,7 +116,7 @@ func TestCORS_NoOriginHeader(t *testing.T) {
 	middleware(handler).ServeHTTP(w, req)
 
 	resp := w.Result()
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if !handlerCalled {
 		t.Error("Expected handler to be called when no Origin header")
@@ -142,7 +142,7 @@ func TestCORS_EmptyAllowedOrigins(t *testing.T) {
 	middleware(handler).ServeHTTP(w, req)
 
 	resp := w.Result()
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if !handlerCalled {
 		t.Error("Expected handler to be called")

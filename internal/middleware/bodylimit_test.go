@@ -22,7 +22,7 @@ func TestMaxBodySize_AllowsNormalRequest(t *testing.T) {
 	middleware(handler).ServeHTTP(w, req)
 
 	resp := w.Result()
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		t.Errorf("Expected 200 for normal request, got %d", resp.StatusCode)
@@ -48,7 +48,7 @@ func TestMaxBodySize_RejectsOversizedRequest(t *testing.T) {
 	middleware(handler).ServeHTTP(w, req)
 
 	resp := w.Result()
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusRequestEntityTooLarge {
 		t.Errorf("Expected 413 for oversized request, got %d", resp.StatusCode)
@@ -70,7 +70,7 @@ func TestMaxBodySize_GETRequest(t *testing.T) {
 	middleware(handler).ServeHTTP(w, req)
 
 	resp := w.Result()
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if !handlerCalled {
 		t.Error("Expected handler to be called for GET request")

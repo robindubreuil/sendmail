@@ -68,7 +68,7 @@ func (es *EmailService) SendContactForm(ctx context.Context, form *models.Contac
 	if err != nil {
 		return err
 	}
-	defer client.Close()
+	defer func() { _ = client.Close() }()
 
 	auth := smtp.PlainAuth("", es.smtpUsername, es.smtpPassword, es.smtpHost)
 	if err := client.Auth(auth); err != nil {
@@ -124,16 +124,16 @@ func (es *EmailService) dialSMTP(ctx context.Context) (*smtp.Client, error) {
 
 	client, err := smtp.NewClient(conn, es.smtpHost)
 	if err != nil {
-		conn.Close()
+		_ = conn.Close()
 		return nil, fmt.Errorf("failed to create SMTP client: %w", err)
 	}
 
 	if ok, _ := client.Extension("STARTTLS"); !ok {
-		client.Close()
+		_ = client.Close()
 		return nil, fmt.Errorf("STARTTLS is required but not supported by the SMTP server")
 	}
 	if err := client.StartTLS(&tls.Config{ServerName: es.smtpHost}); err != nil {
-		client.Close()
+		_ = client.Close()
 		return nil, fmt.Errorf("failed to start TLS: %w", err)
 	}
 
@@ -161,8 +161,8 @@ func encodeSubject(subject string) string {
 func encodeQuotedPrintable(input string) string {
 	var buf bytes.Buffer
 	w := quotedprintable.NewWriter(&buf)
-	w.Write([]byte(input))
-	w.Close()
+	_, _ = w.Write([]byte(input))
+	_ = w.Close()
 	return buf.String()
 }
 
@@ -255,6 +255,6 @@ func (es *EmailService) HealthCheck() error {
 	if err != nil {
 		return fmt.Errorf("SMTP server unreachable: %w", err)
 	}
-	conn.Close()
+	_ = conn.Close()
 	return nil
 }
