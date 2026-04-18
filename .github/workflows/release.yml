@@ -68,33 +68,30 @@ jobs:
           install -m 0644 debian/gosendmail.8 "${PKGDIR}/usr/share/man/man8/gosendmail.8"
           install -m 0644 internal/templates/*.html -t "${PKGDIR}/usr/share/gosendmail/internal/templates/"
 
-          cat > "${PKGDIR}/DEBIAN/control" << 'CONTROL'
-          Package: gosendmail
-          CONTROL
-          echo "Version: ${VERSION}-1" >> "${PKGDIR}/DEBIAN/control"
-          cat >> "${PKGDIR}/DEBIAN/control" << 'CONTROL'
-          Architecture: amd64
-          Maintainer: Robin Dubreuil <63008968+robindubreuil@users.noreply.github.com>
-          Section: net
-          Priority: optional
-          Homepage: https://github.com/robindubreuil/sendmail
-          Rules-Requires-Root: no
-          Depends: ${shlibs:Depends}, ${misc:Depends}
-          Description: Modern Go backend for contact form processing
-           A modern Go backend implementation that processes contact form
-           submissions with validation, reCAPTCHA verification, and SMTP
-           email sending.
-           .
-           Key features:
-            - Form field validation matching frontend regex patterns
-            - Google reCAPTCHA v3 validation with configurable score threshold
-            - SMTP email sending with TLS
-            - Rate limiting to prevent spam
-            - Graceful shutdown with signal handling
-            - Structured JSON logging
-            - Nonce-based CSRF protection
-            - Systemd integration for easy deployment
-          CONTROL
+          {
+            echo "Package: gosendmail"
+            echo "Version: ${VERSION}-1"
+            echo "Architecture: amd64"
+            echo "Maintainer: Robin Dubreuil <63008968+robindubreuil@users.noreply.github.com>"
+            echo "Section: net"
+            echo "Priority: optional"
+            echo "Homepage: https://github.com/robindubreuil/sendmail"
+            echo "Rules-Requires-Root: no"
+            echo "Description: Modern Go backend for contact form processing"
+            echo " A modern Go backend implementation that processes contact form"
+            echo " submissions with validation, reCAPTCHA verification, and SMTP"
+            echo " email sending."
+            echo " ."
+            echo " Key features:"
+            echo "  - Form field validation matching frontend regex patterns"
+            echo "  - Google reCAPTCHA v3 validation with configurable score threshold"
+            echo "  - SMTP email sending with TLS"
+            echo "  - Rate limiting to prevent spam"
+            echo "  - Graceful shutdown with signal handling"
+            echo "  - Structured JSON logging"
+            echo "  - Nonce-based CSRF protection"
+            echo "  - Systemd integration for easy deployment"
+          } > "${PKGDIR}/DEBIAN/control"
 
           install -m 0755 debian/gosendmail.postinst "${PKGDIR}/DEBIAN/postinst"
           install -m 0755 debian/gosendmail.prerm "${PKGDIR}/DEBIAN/prerm"
