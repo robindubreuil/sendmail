@@ -68,7 +68,7 @@ func TestLoad(t *testing.T) {
 				"FROM_ADDRESS", "TO_ADDRESS", "SERVER_HOST", "SERVER_PORT",
 				"SMTP_PORT", "MAX_MESSAGE_SIZE", "RATE_LIMIT_REQUESTS", "GOSENDMAIL_CONFIG_FILE",
 			} {
-				os.Unsetenv(key)
+				_ = os.Unsetenv(key)
 			}
 
 			for key, value := range tt.envVars {
@@ -117,7 +117,7 @@ func TestLoadWithCustomValues(t *testing.T) {
 		"MAX_MESSAGE_SIZE": "", "RATE_LIMIT_REQUESTS": "", "RATE_LIMIT_WINDOW": "",
 		"GOSENDMAIL_CONFIG_FILE": "",
 	} {
-		os.Unsetenv(key)
+		_ = os.Unsetenv(key)
 	}
 
 	envVars := map[string]string{
@@ -335,7 +335,7 @@ func TestGetEnv(t *testing.T) {
 	})
 
 	t.Run("Environment variable not set", func(t *testing.T) {
-		os.Unsetenv("TEST_VAR_UNSET")
+		_ = os.Unsetenv("TEST_VAR_UNSET")
 		result := getEnv("TEST_VAR_UNSET", "default_value")
 		if result != "default_value" {
 			t.Errorf("Expected default_value, got %s", result)
@@ -361,7 +361,7 @@ func TestGetEnvInt(t *testing.T) {
 	})
 
 	t.Run("Not set", func(t *testing.T) {
-		os.Unsetenv("TEST_INT_EMPTY")
+		_ = os.Unsetenv("TEST_INT_EMPTY")
 		result := getEnvInt("TEST_INT_EMPTY", 456)
 		if result != 456 {
 			t.Errorf("Expected 456, got %d", result)
@@ -387,7 +387,7 @@ func TestGetEnvDuration(t *testing.T) {
 	})
 
 	t.Run("Not set", func(t *testing.T) {
-		os.Unsetenv("TEST_DURATION_EMPTY")
+		_ = os.Unsetenv("TEST_DURATION_EMPTY")
 		result := getEnvDuration("TEST_DURATION_EMPTY", 60*time.Second)
 		if result != 60*time.Second {
 			t.Errorf("Expected 60s, got %v", result)
@@ -471,7 +471,7 @@ server:
 				"RECAPTCHA_SECRET_KEY", "SMTP_HOST", "SMTP_USERNAME", "SMTP_PASSWORD",
 				"FROM_ADDRESS", "TO_ADDRESS", "SERVER_HOST", "SERVER_PORT", "GOSENDMAIL_CONFIG_FILE",
 			} {
-				os.Unsetenv(key)
+				_ = os.Unsetenv(key)
 			}
 
 			for key, value := range tt.envVars {
@@ -482,12 +482,12 @@ server:
 			if err != nil {
 				t.Fatalf("Failed to create temp file: %v", err)
 			}
-			defer os.Remove(tmpFile.Name())
+			defer func() { _ = os.Remove(tmpFile.Name()) }()
 
 			if _, err := tmpFile.WriteString(tt.configContent); err != nil {
 				t.Fatalf("Failed to write config content: %v", err)
 			}
-			tmpFile.Close()
+			_ = tmpFile.Close()
 
 			t.Setenv("GOSENDMAIL_CONFIG_FILE", tmpFile.Name())
 
@@ -547,7 +547,7 @@ func TestLoadFromInvalidFile(t *testing.T) {
 				"RECAPTCHA_SECRET_KEY", "SMTP_HOST", "SMTP_USERNAME", "SMTP_PASSWORD",
 				"FROM_ADDRESS", "TO_ADDRESS", "GOSENDMAIL_CONFIG_FILE",
 			} {
-				os.Unsetenv(key)
+				_ = os.Unsetenv(key)
 			}
 
 			if tt.name == "Non-existent file path" {
@@ -557,12 +557,14 @@ func TestLoadFromInvalidFile(t *testing.T) {
 				if err != nil {
 					t.Fatalf("Failed to create temp file: %v", err)
 				}
-				defer os.Remove(tmpFile.Name())
+				defer func() { _ = os.Remove(tmpFile.Name()) }()
 
 				if tt.configContent != "" {
-					tmpFile.WriteString(tt.configContent)
+					if _, err := tmpFile.WriteString(tt.configContent); err != nil {
+						t.Fatalf("Failed to write config content: %v", err)
+					}
 				}
-				tmpFile.Close()
+				_ = tmpFile.Close()
 				t.Setenv("GOSENDMAIL_CONFIG_FILE", tmpFile.Name())
 			}
 
@@ -607,7 +609,7 @@ server:
 	if err != nil {
 		t.Fatalf("Failed to create temp dir: %v", err)
 	}
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	localConfig := filepath.Join(tmpDir, "config.yaml")
 	if err := os.WriteFile(localConfig, []byte(configContent), 0644); err != nil {
@@ -618,7 +620,7 @@ server:
 	if err != nil {
 		t.Fatalf("Failed to get current directory: %v", err)
 	}
-	defer os.Chdir(originalDir)
+	defer func() { _ = os.Chdir(originalDir) }()
 
 	if err := os.Chdir(tmpDir); err != nil {
 		t.Fatalf("Failed to change directory: %v", err)
@@ -628,7 +630,7 @@ server:
 		"RECAPTCHA_SECRET_KEY", "SMTP_HOST", "SMTP_USERNAME", "SMTP_PASSWORD",
 		"FROM_ADDRESS", "TO_ADDRESS", "GOSENDMAIL_CONFIG_FILE",
 	} {
-		os.Unsetenv(key)
+		_ = os.Unsetenv(key)
 	}
 
 	t.Setenv("RECAPTCHA_SECRET_KEY", "test-secret")

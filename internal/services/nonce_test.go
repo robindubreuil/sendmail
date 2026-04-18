@@ -153,7 +153,7 @@ func TestNonceService_MaxCapacity(t *testing.T) {
 }
 
 func TestNonceService_Cleanup(t *testing.T) {
-	s := NewNonceService(50*time.Millisecond)
+	s := NewNonceService(50 * time.Millisecond)
 	defer s.Shutdown()
 
 	nonce1, _ := s.Generate()
@@ -188,7 +188,7 @@ func TestNonceService_Cleanup(t *testing.T) {
 }
 
 func TestNonceService_CleanupPreservesValid(t *testing.T) {
-	s := NewNonceService(200*time.Millisecond)
+	s := NewNonceService(200 * time.Millisecond)
 	defer s.Shutdown()
 
 	expiredNonce, _ := s.Generate()

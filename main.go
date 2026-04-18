@@ -46,7 +46,7 @@ func main() {
 	r.Use(middleware.RealIP)
 	r.Use(midd.RequestLogger)
 	r.Use(midd.SecurityHeaders)
-	r.Use(midd.MaxBodySize(1<<20))
+	r.Use(midd.MaxBodySize(1 << 20))
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Timeout(cfg.Server.WriteTimeout))
 	r.Use(rateLimiter.Middleware)
@@ -60,7 +60,9 @@ func main() {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]string{"nonce": nonce})
+		if err := json.NewEncoder(w).Encode(map[string]string{"nonce": nonce}); err != nil {
+			slog.Error("Failed to encode nonce response", "error", err)
+		}
 	})
 
 	r.Post("/sendmail", middleware.AllowContentType("application/x-www-form-urlencoded")(http.HandlerFunc(contactHandler.HandleContactHTML)).ServeHTTP)
@@ -68,10 +70,12 @@ func main() {
 
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]string{
+		if err := json.NewEncoder(w).Encode(map[string]string{
 			"status":  "ok",
 			"version": version,
-		})
+		}); err != nil {
+			slog.Error("Failed to encode health response", "error", err)
+		}
 	})
 
 	r.Get("/health/ready", func(w http.ResponseWriter, r *http.Request) {
@@ -82,11 +86,13 @@ func main() {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]string{
+		if err := json.NewEncoder(w).Encode(map[string]string{
 			"status":    status,
 			"version":   version,
 			"timestamp": time.Now().UTC().Format(time.RFC3339),
-		})
+		}); err != nil {
+			slog.Error("Failed to encode readiness response", "error", err)
+		}
 	})
 
 	addr := cfg.Server.Addr()

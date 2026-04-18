@@ -98,14 +98,13 @@ jobs:
 
           printf '/etc/default/gosendmail\n/etc/gosendmail/config.yaml\n' > "${PKGDIR}/DEBIAN/conffiles"
 
-          chown -R root:root "${PKGDIR}"
           chmod 0750 "${PKGDIR}/var/lib/gosendmail"
           chmod 0750 "${PKGDIR}/var/log/gosendmail"
           chmod 0640 "${PKGDIR}/etc/default/gosendmail"
           chmod 0640 "${PKGDIR}/etc/gosendmail/env.dist"
           chmod 0640 "${PKGDIR}/etc/gosendmail/config.yaml"
 
-          dpkg-deb --build "${PKGDIR}"
+          dpkg-deb --root-owner-group --build "${PKGDIR}"
 
       - name: Upload debian package
         uses: actions/upload-artifact@v4
