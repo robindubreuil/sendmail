@@ -111,12 +111,12 @@ func (es *EmailService) dialSMTP(ctx context.Context) (*smtp.Client, error) {
 	if es.smtpPort == 465 {
 		tlsConn := tls.Client(conn, &tls.Config{ServerName: es.smtpHost})
 		if err := tlsConn.HandshakeContext(ctx); err != nil {
-			tlsConn.Close()
+			_ = tlsConn.Close()
 			return nil, fmt.Errorf("failed to perform TLS handshake: %w", err)
 		}
 		client, err := smtp.NewClient(tlsConn, es.smtpHost)
 		if err != nil {
-			tlsConn.Close()
+			_ = tlsConn.Close()
 			return nil, fmt.Errorf("failed to create SMTP client: %w", err)
 		}
 		return client, nil

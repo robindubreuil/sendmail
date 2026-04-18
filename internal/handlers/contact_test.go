@@ -786,9 +786,7 @@ func TestProcessContactForm_WithEmailError(t *testing.T) {
 	form, err := handler.processContactForm(recorder, req)
 	if err == nil {
 		t.Error("Expected error when email sending fails")
-	}
-
-	if err.StatusCode != http.StatusInternalServerError {
+	} else if err.StatusCode != http.StatusInternalServerError {
 		t.Errorf("Expected status 500, got %d", err.StatusCode)
 	}
 

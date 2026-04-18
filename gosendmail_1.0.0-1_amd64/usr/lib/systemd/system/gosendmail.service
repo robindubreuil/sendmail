@@ -1,0 +1,56 @@
+[Unit]
+Description=GoSendmail Contact Form Service
+Documentation=https://github.com/robindubreuil/sendmail
+After=network.target
+Wants=network-online.target
+
+[Service]
+# Security hardening
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/gosendmail /var/log/gosendmail /etc/gosendmail
+RemoveIPC=true
+RestrictRealtime=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_NETLINK
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+MemoryDenyWriteExecute=true
+RestrictNamespaces=true
+LockPersonality=true
+ProtectControlGroups=true
+ProtectKernelModules=true
+ProtectKernelTunables=true
+RestrictSUIDSGID=true
+
+# User and group (created by postinst)
+User=gosendmail
+Group=gosendmail
+
+# Supplementary groups for SSL certificate access
+SupplementaryGroups=ssl-cert
+
+# Resource limits
+LimitNOFILE=65536
+TimeoutStartSec=30
+TimeoutStopSec=30
+Restart=on-failure
+RestartSec=5
+
+# Configuration via environment file
+EnvironmentFile=-/etc/default/gosendmail
+EnvironmentFile=-/etc/gosendmail/env
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=gosendmail
+
+# Service command
+ExecStart=/usr/bin/gosendmail
+ExecReload=/bin/kill -HUP $MAINPID
+
+[Install]
+WantedBy=multi-user.target

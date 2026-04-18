@@ -223,7 +223,7 @@ func (h *ContactHandler) sendHTMLSuccessResponse(w http.ResponseWriter, message 
 
 func writeFallbackSuccessHTML(w http.ResponseWriter, message string) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	fmt.Fprintf(w, `<!DOCTYPE html>
+	_, _ = fmt.Fprintf(w, `<!DOCTYPE html>
 <html lang="fr"><head><meta charset="UTF-8"><title>Message envoyé</title></head>
 <body style="font-family:sans-serif;text-align:center;padding:50px">
 <h1 style="color:#28a745">Message envoyé avec succès</h1>

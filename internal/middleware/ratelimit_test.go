@@ -350,11 +350,7 @@ func TestRateLimiter_HighConcurrency(t *testing.T) {
 		wg.Add(1)
 		go func(ip string) {
 			defer wg.Done()
-			if rl.allow(ip) {
-				// Use atomic operations or mutex for thread safety
-				// For simplicity, using a mutex here
-				// In production, you might use sync/atomic
-			}
+			rl.allow(ip)
 		}("192.168.1.1")
 	}
 
