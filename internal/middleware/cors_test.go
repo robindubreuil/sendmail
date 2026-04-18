@@ -178,7 +178,7 @@ func TestCORS_MultipleOrigins(t *testing.T) {
 			middleware(handler).ServeHTTP(w, req)
 
 			resp := w.Result()
-			resp.Body.Close()
+			_ = resp.Body.Close()
 
 			allowOrigin := resp.Header.Get("Access-Control-Allow-Origin")
 			if tt.shouldAllow && allowOrigin != tt.origin {

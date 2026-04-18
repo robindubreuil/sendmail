@@ -81,7 +81,7 @@ func TestHealthEndpoint(t *testing.T) {
 	r.ServeHTTP(w, req)
 
 	resp := w.Result()
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		t.Errorf("Expected status 200, got %d", resp.StatusCode)
@@ -152,7 +152,7 @@ func TestServerMiddleware(t *testing.T) {
 	r.ServeHTTP(w, req)
 
 	resp := w.Result()
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode == 0 {
 		t.Errorf("Expected a response status code")

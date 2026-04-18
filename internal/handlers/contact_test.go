@@ -109,7 +109,7 @@ func TestHandleContact_Success(t *testing.T) {
 	handler.HandleContactJSON(w, req)
 
 	resp := w.Result()
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		t.Errorf("Expected status 200, got %d", resp.StatusCode)
@@ -146,7 +146,7 @@ func TestHandleContact_WrongMethod(t *testing.T) {
 	handler.HandleContactJSON(w, req)
 
 	resp := w.Result()
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusBadRequest {
 		t.Errorf("Expected status 400, got %d", resp.StatusCode)
@@ -184,7 +184,7 @@ func TestHandleContact_InvalidNonce(t *testing.T) {
 	handler.HandleContactJSON(w, req)
 
 	resp := w.Result()
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusBadRequest {
 		t.Errorf("Expected status 400, got %d", resp.StatusCode)
@@ -222,7 +222,7 @@ func TestHandleContact_MissingConsent(t *testing.T) {
 	handler.HandleContactJSON(w, req)
 
 	resp := w.Result()
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusBadRequest {
 		t.Errorf("Expected status 400, got %d", resp.StatusCode)
@@ -260,7 +260,7 @@ func TestHandleContact_ValidationFailure(t *testing.T) {
 	handler.HandleContactJSON(w, req)
 
 	resp := w.Result()
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusBadRequest {
 		t.Errorf("Expected status 400, got %d", resp.StatusCode)
@@ -302,7 +302,7 @@ func TestHandleContact_RecaptchaFailure(t *testing.T) {
 	handler.HandleContactJSON(w, req)
 
 	resp := w.Result()
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusBadRequest {
 		t.Errorf("Expected status 400, got %d", resp.StatusCode)
@@ -344,7 +344,7 @@ func TestHandleContact_EmailFailure(t *testing.T) {
 	handler.HandleContactJSON(w, req)
 
 	resp := w.Result()
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusInternalServerError {
 		t.Errorf("Expected status 500, got %d", resp.StatusCode)
@@ -445,7 +445,7 @@ func TestSendJSONSuccessresponse(t *testing.T) {
 	handler.sendJSONSuccessResponse(w, "Test success message")
 
 	resp := w.Result()
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		t.Errorf("Expected status 200, got %d", resp.StatusCode)
@@ -486,7 +486,7 @@ func TestSendJSONErrorresponse(t *testing.T) {
 	handler.sendJSONErrorResponse(w, http.StatusBadRequest, "Test error message", errors)
 
 	resp := w.Result()
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusBadRequest {
 		t.Errorf("Expected status 400, got %d", resp.StatusCode)
@@ -526,7 +526,7 @@ func TestSendJSONErrorresponse_WithNilErrors(t *testing.T) {
 	handler.sendJSONErrorResponse(w, http.StatusInternalServerError, "Server error", nil)
 
 	resp := w.Result()
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusInternalServerError {
 		t.Errorf("Expected status 500, got %d", resp.StatusCode)
@@ -568,7 +568,7 @@ func TestHandleContact_WithOptionalFields(t *testing.T) {
 	handler.HandleContactJSON(w, req)
 
 	resp := w.Result()
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		t.Errorf("Expected status 200, got %d", resp.StatusCode)
@@ -623,7 +623,7 @@ func TestHandleContact_LargeFormSubmission(t *testing.T) {
 	handler.HandleContactJSON(w, req)
 
 	resp := w.Result()
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusBadRequest {
 		t.Errorf("Expected status 400 for message too long, got %d", resp.StatusCode)
@@ -661,7 +661,7 @@ func TestHandleContactHTML_Success(t *testing.T) {
 	handler.HandleContactHTML(w, req)
 
 	resp := w.Result()
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		t.Errorf("Expected status 200, got %d", resp.StatusCode)
@@ -707,7 +707,7 @@ func TestHandleContactHTML_Error(t *testing.T) {
 	handler.HandleContactHTML(w, req)
 
 	resp := w.Result()
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusBadRequest {
 		t.Errorf("Expected status 400, got %d", resp.StatusCode)
